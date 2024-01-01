@@ -2,9 +2,7 @@
 
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api')
-const cheerioLib = require('cheerio')
-const fsLib = require('fs')
-const pathLib = require('path')
+const axios = require('axios')
 
 //FOR VPS
 const express = require('express')
@@ -19,68 +17,45 @@ server.get('/', (req, res) => {
    res.sendStatus(200)
 })
 
-const getPageContentHelper = require('./commands/getPageContent.js')
-const getMessageForSendingHelper = require('./commands/getMessageForSending.js')
+const getMessageForSendingHelper = require('./commands/getMessageForSending.js');
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '0';
 const CHANNEL_ID = process.env.CHANNEL_ID || '0';
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN || '0';
 
 const bot = new TelegramBot(BOT_TOKEN, {
    polling: true,
 })
 
-const SITES = ['https://vk.com/kaiknitu', 'https://vk.com/dean4']
+const SITES = [{ owner_id: -406973, domain: 'https://vk.com/kaiknitu', name: 'КНИТУ-КАИ им. А.Н.Туполева' }, {
+   owner_id: -42009524, domain: 'https://vk.com/dean4', name: 'Дирекция института КТЗИ, КНИТУ-КАИ, 7 здание'
+}]
 
-let checkWalls = async (site_url) => {
+let checkWalls = async (site) => {
    try {
-      const content = await getPageContentHelper(site_url)
-      const $ = cheerioLib.load(content)
-      const newPosts = {}
-      const author = await $('.page_name').text()
-      newPosts[author] = {}
-      $('.wall_post_cont._wall_post_cont').each((index, item) => {
-         let postText = $(item).text()
-         newPosts[author][$(item).attr('id')] = { text: postText, link: site_url, author: author, postID: $(item).attr('id').slice(3) }
-      })
-
-      await fsLib.stat(pathLib.resolve(__dirname, 'posts.json'), async (err) => {
-         if (err == null) {
-            await fsLib.readFile(pathLib.resolve(__dirname, 'posts.json'), 'utf8', async (err, oldData) => {
-               if (err) throw err
-               let oldPosts = JSON.parse(oldData)
-               let postsForSending = {}
-
-               for (let postID of Object.keys(newPosts[author])) {
-                  if (!(postID in oldPosts[author])) {
-                     postsForSending[postID] = newPosts[author][postID]
-                  }
-               }
-
-               if (postsForSending != {}) {
-
-                  for (let item of Object.keys(postsForSending)) {
-                     await bot.sendMessage(CHANNEL_ID, getMessageForSendingHelper(postsForSending[item]))
-                  }
-
-                  fsLib.writeFile(pathLib.resolve(__dirname, 'posts.json'), JSON.stringify(newPosts), (err) => {
-                     if (err) throw err;
-                  })
-               }
-            })
-         } else {
-            fsLib.writeFile(pathLib.resolve(__dirname, 'posts.json'), JSON.stringify(newPosts), (err) => {
-               if (err) throw err;
-            })
+      let wallInfo = null
+      let postsForSending = []
+      await axios.get(`https://api.vk.com/method/wall.get?access_token=${ACCESS_TOKEN}&count=5&v=5.199&owner_id=${site.owner_id}`)
+         .then(data => {
+            wallInfo = data.data.response.items
+         })
+      for (let post of wallInfo) {
+         if ((new Date().getTime() - 600000) <= post.date * 1000 && (post.date * 1000 <= new Date().getTime())) {
+            postsForSending.push(post)
          }
-
-      })
+      }
+      if (postsForSending.length > 0) {
+         for (let post of postsForSending) {
+            await bot.sendMessage(CHANNEL_ID, getMessageForSendingHelper(site, post), { parse_mode: 'HTML' })
+         }
+      }
    } catch (err) {
       console.log(err)
    }
 }
 
 setInterval(async () => {
-   for (let link of SITES) {
-      checkWalls(link)
+   for (let site of SITES) {
+      checkWalls(site)
    }
-}, 300_000)
+}, 600_000)
