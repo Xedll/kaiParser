@@ -118,7 +118,14 @@ let checkWalls = async (site) => {
 }
 
 setInterval(() => {
-   for (let site of SITES) {
-      checkWalls(site)
-   }
+   fs.readFile(path.resolve(__dirname, 'sites.json'), 'utf8', (err, data) => {
+      if (err == null) {
+         for (let site of JSON.parse(data)) {
+            checkWalls(site)
+         }
+      } else if (err.code == 'ENOENT') {
+         fs.writeFileSync(path.resolve(__dirname, 'sites.json'), JSON.stringify(SITES))
+      }
+   })
+
 }, 600_000)
