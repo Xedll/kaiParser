@@ -5,6 +5,8 @@ const TelegramBot = require('node-telegram-bot-api')
 const cheerioLib = require('cheerio')
 const fsLib = require('fs')
 const pathLib = require('path')
+
+//FOR VPS
 const express = require('express')
 
 const server = express()
@@ -55,9 +57,14 @@ let checkWalls = async (site_url) => {
                }
 
                if (postsForSending != {}) {
+
                   for (let item of Object.keys(postsForSending)) {
                      await bot.sendMessage(CHANNEL_ID, getMessageForSendingHelper(postsForSending[item]))
                   }
+
+                  fsLib.writeFile(pathLib.resolve(__dirname, 'posts.json'), JSON.stringify(newPosts), (err) => {
+                     if (err) throw err;
+                  })
                }
             })
          } else {
@@ -74,6 +81,6 @@ let checkWalls = async (site_url) => {
 
 setInterval(async () => {
    for (let link of SITES) {
-      await checkWalls(link)
+      checkWalls(link)
    }
-}, 600_000)
+}, 300_000)
