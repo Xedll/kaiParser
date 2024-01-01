@@ -7,17 +7,17 @@ const fs = require('fs')
 const path = require('path')
 //FOR VPS
 
-const express = require('express')
+// const express = require('express')
 
-const server = express()
+// const server = express()
 
-server.listen(3000, () => {
-   console.log('http://localhost:3000')
-})
+// server.listen(3000, () => {
+//    console.log('http://localhost:3000')
+// })
 
-server.get('/', (req, res) => {
-   res.sendStatus(200)
-})
+// server.get('/', (req, res) => {
+//    res.sendStatus(200)
+// })
 
 const getMessageForSendingHelper = require('./commands/getMessageForSending.js');
 
@@ -25,7 +25,9 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '0';
 const CHANNEL_ID = process.env.CHANNEL_ID || '0';
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN || '0';
 const ADMIN_ID = process.env.ADMIN_ID || '0';
-
+let SITES = [{ owner_id: -406973, domain: 'https://vk.com/kaiknitu', name: 'КНИТУ-КАИ им. А.Н.Туполева' }, {
+   owner_id: -42009524, domain: 'https://vk.com/dean4', name: 'Дирекция института КТЗИ, КНИТУ-КАИ, 7 здание'
+}]
 let isWait = null
 
 const bot = new TelegramBot(BOT_TOKEN, {
@@ -47,6 +49,10 @@ bot.onText(/Добавить/, async (message) => {
    isWait = 'add'
 })
 
+bot.onText(/Назад/, async (message) => {
+   isWait = null
+})
+
 bot.onText(/Удалить/, async (message) => {
    if (message.text == 'Назад' || message.text == '/start' || message.chat.id != ADMIN_ID) return
    let msg = ''
@@ -60,11 +66,14 @@ bot.onText(/Удалить/, async (message) => {
 
 bot.onText(/Показать/, async (message) => {
    if (message.text == 'Назад' || message.text == '/start' || message.chat.id != ADMIN_ID) return
-   let msg = ''
-   for (let item of SITES) {
-      msg += `Domain: ${item.domain}\nID: ${item.owner_id}\nName: ${item.name}\n-------\n`
-   }
-   await bot.sendMessage(ADMIN_ID, msg)
+   fs.readFile(path.resolve(__dirname, 'sites.json'), 'utf8', async (err, data) => {
+      let msg = ''
+      for (let item of JSON.parse(data)) {
+         msg += `Domain: ${item.domain}\nID: ${item.owner_id}\nName: ${item.name}\n-------\n`
+      }
+      await bot.sendMessage(ADMIN_ID, msg)
+   })
+
 })
 
 bot.on('message', async (message) => {
@@ -77,6 +86,11 @@ bot.on('message', async (message) => {
          SITES.push({ owner_id: data[1], domain: data[2], name: data[3] })
          fs.writeFileSync(path.resolve(__dirname, 'sites.json'), JSON.stringify(SITES))
          isWait = null
+         let msg = ''
+         for (let item of SITES) {
+            msg += `Domain: ${item.domain}\nID: ${item.owner_id}\nName: ${item.name}\n-------\n`
+         }
+         await bot.sendMessage(ADMIN_ID, msg)
       }
    }
    if (isWait == 'delete') {
@@ -86,13 +100,13 @@ bot.on('message', async (message) => {
       SITES.splice(res, 1)
       fs.writeFileSync(path.resolve(__dirname, 'sites.json'), JSON.stringify(SITES))
       isWait = null
+      let msg = ''
+      for (let item of SITES) {
+         msg += `Domain: ${item.domain}\nID: ${item.owner_id}\nName: ${item.name}\n-------\n`
+      }
+      await bot.sendMessage(ADMIN_ID, msg)
    }
 })
-
-
-const SITES = [{ owner_id: -406973, domain: 'https://vk.com/kaiknitu', name: 'КНИТУ-КАИ им. А.Н.Туполева' }, {
-   owner_id: -42009524, domain: 'https://vk.com/dean4', name: 'Дирекция института КТЗИ, КНИТУ-КАИ, 7 здание'
-}]
 
 let checkWalls = async (site) => {
    try {
@@ -128,4 +142,4 @@ setInterval(() => {
       }
    })
 
-}, 600_000)
+}, 6_000)
