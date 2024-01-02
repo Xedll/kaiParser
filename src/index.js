@@ -7,17 +7,17 @@ const fs = require('fs')
 const path = require('path')
 //FOR VPS
 
-// const express = require('express')
+const express = require('express')
 
-// const server = express()
+const server = express()
 
-// server.listen(3000, () => {
-//    console.log('http://localhost:3000')
-// })
+server.listen(3000, () => {
+   console.log('http://localhost:3000')
+})
 
-// server.get('/', (req, res) => {
-//    res.sendStatus(200)
-// })
+server.get('/', (req, res) => {
+   res.sendStatus(200)
+})
 
 const getMessageForSendingHelper = require('./commands/getMessageForSending.js');
 
@@ -142,4 +142,4 @@ setInterval(() => {
       }
    })
 
-}, 6_000)
+}, 600_000)
