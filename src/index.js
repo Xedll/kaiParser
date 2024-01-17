@@ -5,19 +5,6 @@ const TelegramBot = require('node-telegram-bot-api')
 const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
-//FOR VPS
-
-const express = require('express')
-
-const server = express()
-
-server.listen(3000, () => {
-   console.log('http://localhost:3000')
-})
-
-server.get('/', (req, res) => {
-   res.sendStatus(200)
-})
 
 const getMessageForSendingHelper = require('./commands/getMessageForSending.js');
 
