@@ -5,13 +5,26 @@ const TelegramBot = require('node-telegram-bot-api')
 const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
+//FOR VPS
+
+const express = require('express')
+
+const server = express()
+
+server.listen(3000, () => {
+   console.log('http://localhost:3000')
+})
+
+server.get('/', (req, res) => {
+   res.sendStatus(200)
+})
 
 const getMessageForSendingHelper = require('./commands/getMessageForSending.js');
 
-const BOT_TOKEN = process.env.BOT_TOKEN || '0';
-const CHANNEL_ID = process.env.CHANNEL_ID || '0';
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN || '0';
-const ADMIN_ID = process.env.ADMIN_ID || '0';
+const BOT_TOKEN = process.env.kainewsBot_token || '0';
+const CHANNEL_ID = process.env.kainewsBot_CHANNEL_ID || '0';
+const ACCESS_TOKEN = process.env.kainewsBot_ACCESS_TOKEN || '0';
+const ADMIN_ID = process.env.kainewsBot_ADMIN_ID || '0';
 let SITES = []
 let isWait = null
 
@@ -37,7 +50,6 @@ bot.onText(/Добавить/, async (message) => {
 bot.onText(/Назад/, async (message) => {
    isWait = null
 })
-
 bot.onText(/Удалить/, async (message) => {
    if (message.text == 'Назад' || message.text == '/start' || message.chat.id != ADMIN_ID) return
    let msg = ''
