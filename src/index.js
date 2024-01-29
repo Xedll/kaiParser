@@ -6,7 +6,7 @@ const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
 
-const getMessageForSendingHelper = require('./commands/getMessageForSending.js');
+const getMessageForSendingHelper = require(path.resolve(__dirname, './commands/getMessageForSending.js'));
 
 const BOT_TOKEN = process.env.kainewsBot_token || '0';
 const CHANNEL_ID = process.env.kainewsBot_CHANNEL_ID || '0';
