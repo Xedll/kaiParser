@@ -6,7 +6,7 @@ const getMessageForSending = (site, post) => {
    const postHours = postDate.getHours() >= 10 ? postDate.getHours() : '0' + (postDate.getHours())
    const postMinutes = postDate.getMinutes() >= 10 ? postDate.getMinutes() : '0' + (postDate.getMinutes())
    const postSeconds = postDate.getSeconds() >= 10 ? postDate.getSeconds() : '0' + (postDate.getSeconds())
-   let message = `<a href="${site.domain}">${site.name}</a> (<a href="${site.domain}?w=wall${site.owner_id}_${post.id}">${postDay}.${postMonth}.${postDate.getFullYear()} ${postHours}:${postMinutes}:${postSeconds}</a>) #${siteName.split(' ').join('_')}\n\n${post.text}`
+   let message = `<a href="${site.domain}">${site.name}</a> (<a href="${site.domain}?w=wall${site.owner_id}_${post.id}">${postDay}.${postMonth}.${postDate.getFullYear()} ${postHours}:${postMinutes}:${postSeconds}</a>)\n#${siteName.split(' ').join('_')}\n\n${post.text ? post.text : "(Пост не содержит текста. Возможно репост чего-то.)"}`
    return message
 }
 module.exports = getMessageForSending;
