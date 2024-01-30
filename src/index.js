@@ -65,7 +65,7 @@ bot.on('message', async (message) => {
    if (isWait == 'add') {
       const data = message.text.match(/(.+);(.+);(.+)/) || []
       if (typeof data[1] == 'undefined' || typeof data[2] == 'undefined' || typeof data[3] == 'undefined') {
-         return await bot.sendMessage(ADMIN_ID, 'Перезаполни. Ошибка.')
+         return await bot.sendMessage(ADMIN_ID, 'Перезаполни, пожалуйста. Ошибка.')
       } else {
          SITES.push({ owner_id: data[1], domain: data[2], name: data[3] })
          fs.writeFileSync(path.resolve(__dirname, 'sites.json'), JSON.stringify(SITES))
